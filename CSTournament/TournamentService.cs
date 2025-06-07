@@ -1,10 +1,11 @@
+using CSTournament.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace CSTournament;
 
 public class TournamentService : ITournamentService
 {
-    private readonly Dictionary<Guid, Tournament> _tournaments = new();
+    private readonly Dictionary<string, Tournament> _tournaments = new(StringComparer.OrdinalIgnoreCase);
     private readonly IPlayerService _playerService;
 
     public TournamentService(IPlayerService playerService)
@@ -14,14 +15,14 @@ public class TournamentService : ITournamentService
 
     public Results<Ok<Tournament>, BadRequest<string>, NotFound<string>> CreateTournament(TournamentCreateRequest req)
     {
-        var newTournament = new Tournament(Guid.NewGuid(), req.Name, [], []);
+        var newTournament = new Tournament(req.Id, req.Name, [], []);
 
         if (req.ParentId != null)
         {
-            var parent = FindTournament(req.ParentId.Value);
+            var parent = FindTournament(req.ParentId);
             
             if (parent == null)
-                return TypedResults.NotFound("Parent tournament not found.");
+                return TypedResults.NotFound($"Parent {req.ParentId} tournament not found.");
             
             if (GetDepth(parent) >= 5)
                 return TypedResults.BadRequest("Max depth exceeded.");
@@ -36,53 +37,55 @@ public class TournamentService : ITournamentService
         return TypedResults.Ok(newTournament);
     }
 
-    public Ok<List<Tournament>> GetTournaments()
+    public Ok<IEnumerable<Tournament>> GetTournaments()
     {
-        return TypedResults.Ok(_tournaments.Values.ToList());
+        return TypedResults.Ok(_tournaments.Values.AsEnumerable());
     }
 
-    public Results<Ok<Tournament>, NotFound> GetTournamentDetails(Guid id)
+    public Results<Ok<Tournament>, NotFound> GetTournamentDetails(string id)
     {
         var tournament = FindTournament(id);
         
         return tournament != null ? TypedResults.Ok(tournament) : TypedResults.NotFound();
     }
 
-    public Results<Ok<string>, NotFound<string>> DeleteTournament(Guid id)
+    public Results<Ok<string>, NotFound<string>> DeleteTournament(string id)
     {
         var isDeleted = _tournaments.Remove(id);
         
         if (!isDeleted)
             isDeleted = DeleteFromSubTournaments(_tournaments.Values, id);
         
-        return isDeleted ? TypedResults.Ok("") : TypedResults.NotFound("");
+        return isDeleted
+            ? TypedResults.Ok($"Tournament {id} has been deleted.")
+            : TypedResults.NotFound($"Tournament {id} not found.");
     }
 
-    public Results<Ok, BadRequest<string>, NotFound<string>> RegisterPlayer(Guid tournamentId, Guid playerId)
+    public Results<Ok, BadRequest<string>, NotFound<string>> RegisterPlayer(string tournamentId, string username)
     {
-        if (!_playerService.PlayerExists(playerId))
-            return TypedResults.NotFound("Player not found.");
+        if (!_playerService.PlayerExists(username))
+            return TypedResults.NotFound($"Player {username} not found.");
 
         var tournament = FindTournament(tournamentId);
         if (tournament == null)
-            return TypedResults.NotFound("Tournament not found.");
+            return TypedResults.NotFound($"Tournament {tournamentId} not found.");
 
         var parent = FindParentTournament(_tournaments.Values, tournamentId);
-        if (parent != null && !parent.PlayerIds.Contains(playerId))
+        if (parent != null && !parent.PlayerUsernames.Contains(username, StringComparer.OrdinalIgnoreCase))
         {
             return TypedResults.BadRequest("Player must be registered in parent tournament.");
         }
 
-        if (!tournament.PlayerIds.Contains(playerId))
-            tournament.PlayerIds.Add(playerId);
+        if (!tournament.PlayerUsernames.Contains(username, StringComparer.OrdinalIgnoreCase))
+            tournament.PlayerUsernames.Add(username);
 
         return TypedResults.Ok();
     }
 
     // Helpers
-    private Tournament? FindTournament(Guid id) => FindTournamentRecursive(_tournaments.Values, id);
+    private Tournament? FindTournament(string id) => FindTournamentRecursive(_tournaments.Values, id);
 
-    private static Tournament? FindTournamentRecursive(IEnumerable<Tournament> tournaments, Guid id)
+    private static Tournament? FindTournamentRecursive(IEnumerable<Tournament> tournaments, string id)
     {
         foreach (var t in tournaments)
         {
@@ -98,11 +101,12 @@ public class TournamentService : ITournamentService
         return null;
     }
 
-    private static bool DeleteFromSubTournaments(IEnumerable<Tournament> tournaments, Guid id)
+    private static bool DeleteFromSubTournaments(IEnumerable<Tournament> tournaments, string id)
     {
         foreach (var t in tournaments)
         {
-            var match = t.SubTournaments.FirstOrDefault(x => x.Id == id);
+            var match = t.SubTournaments
+                .FirstOrDefault(x => x.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
             if (match != null)
             {
                 t.SubTournaments.Remove(match);
@@ -116,11 +120,11 @@ public class TournamentService : ITournamentService
         return false;
     }
 
-    private static Tournament? FindParentTournament(IEnumerable<Tournament> tournaments, Guid childId)
+    private static Tournament? FindParentTournament(IEnumerable<Tournament> tournaments, string childId)
     {
         foreach (var t in tournaments)
         {
-            if (t.SubTournaments.Any(st => st.Id == childId))
+            if (t.SubTournaments.Any(st => st.Id.Equals(childId, StringComparison.OrdinalIgnoreCase)))
                 return t;
             
             var result = FindParentTournament(t.SubTournaments, childId);

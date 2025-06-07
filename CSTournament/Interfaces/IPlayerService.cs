@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace CSTournament;
+namespace CSTournament.Interfaces;
 
 public interface IPlayerService
 {
     Results<Ok<Player>, BadRequest<string>> AddPlayer(Player player);
     Ok<List<Player>> GetPlayers();
-    Results<Ok<Player>, NotFound> GetPlayer(Guid id);
-    Results<Ok, NotFound> DeletePlayer(Guid id);
-    bool PlayerExists(Guid id);
+    Results<Ok<Player>, NotFound> GetPlayer(string username);
+    Results<Ok, NotFound> DeletePlayer(string username);
+    bool PlayerExists(string username);
 }

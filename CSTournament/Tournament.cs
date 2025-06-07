@@ -1,3 +1,3 @@
 namespace CSTournament;
 
-public record Tournament(Guid Id, string Name, List<Guid> PlayerIds, List<Tournament> SubTournaments);
+public record Tournament(string Id, string Name, List<string> PlayerUsernames, List<Tournament> SubTournaments);

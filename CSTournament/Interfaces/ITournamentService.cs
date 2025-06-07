@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace CSTournament;
+namespace CSTournament.Interfaces;
 
-interface ITournamentService
+public interface ITournamentService
 {
     Results<Ok<Tournament>, BadRequest<string>, NotFound<string>> CreateTournament(TournamentCreateRequest req);
-    Ok<List<Tournament>> GetTournaments();
-    Results<Ok<Tournament>, NotFound> GetTournamentDetails(Guid id);
-    Results<Ok<string>, NotFound<string>> DeleteTournament(Guid id);
-    Results<Ok, BadRequest<string>, NotFound<string>> RegisterPlayer(Guid tournamentId, Guid playerId);
+    Ok<IEnumerable<Tournament>> GetTournaments();
+    Results<Ok<Tournament>, NotFound> GetTournamentDetails(string id);
+    Results<Ok<string>, NotFound<string>> DeleteTournament(string id);
+    Results<Ok, BadRequest<string>, NotFound<string>> RegisterPlayer(string tournamentId, string username);
 }

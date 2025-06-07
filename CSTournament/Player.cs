@@ -1,3 +1,3 @@
 namespace CSTournament;
 
-public record Player(Guid Id, string Name, int Age);
+public record Player(string Username, string Name, int Age);

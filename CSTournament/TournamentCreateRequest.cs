@@ -1,3 +1,3 @@
 namespace CSTournament;
 
-public record TournamentCreateRequest(string Name, Guid? ParentId);
+public record TournamentCreateRequest(string Id, string Name, string? ParentId);

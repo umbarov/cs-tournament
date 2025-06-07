@@ -1,6 +1,6 @@
 @CSTournament_HostAddress = http://localhost:5075
 
-GET {{CSTournament_HostAddress}}/weatherforecast/
+GET {{CSTournament_HostAddress}}/players/
 Accept: application/json
 
 ###
