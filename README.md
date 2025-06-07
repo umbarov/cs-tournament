@@ -21,8 +21,8 @@ A RESTful web API for managing Counter-Strike tournaments and players, supportin
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/umbarov/cs-tournament-api.git
-cd cs-tournament-api
+git clone https://github.com/umbarov/cs-tournament.git
+cd cs-tournament
 ```
 
 ### 2. Build and Run the Application
