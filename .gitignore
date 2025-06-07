@@ -1,0 +1,35 @@
+# .NET build output
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+*.sln.iml
+
+# ASP.NET logs and settings
+logs/
+appsettings.Development.json
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Test results
+TestResults/
+
+# Scalar (if it generates local cache or configs)
+.scalar/
+scalar.yaml
+
+# Optional: secrets or environment-specific configs
+.env
+*.secrets.json
