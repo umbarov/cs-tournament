@@ -14,9 +14,9 @@ public class PlayerService : IPlayerService
             : TypedResults.Ok(player);
     }
 
-    public Ok<List<Player>> GetPlayers()
+    public Ok<IEnumerable<Player>> GetPlayers()
     {
-        return TypedResults.Ok(_players.Values.ToList());
+        return TypedResults.Ok(_players.Values as IEnumerable<Player>);
     }
 
     public Results<Ok<Player>, NotFound> GetPlayer(string username)

@@ -39,7 +39,7 @@ public class TournamentService : ITournamentService
 
     public Ok<IEnumerable<Tournament>> GetTournaments()
     {
-        return TypedResults.Ok(_tournaments.Values.AsEnumerable());
+        return TypedResults.Ok(_tournaments.Values as IEnumerable<Tournament>);
     }
 
     public Results<Ok<Tournament>, NotFound> GetTournamentDetails(string id)

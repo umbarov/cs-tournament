@@ -52,15 +52,15 @@ Tests are located in:
 ### Players
 - `POST /players` — Add a player
 - `GET /players` — List all players
-- `GET /players/{id}` — Get player by ID
-- `DELETE /players/{id}` — Delete player
+- `GET /players/{username}` — Get player by Username
+- `DELETE /players/{username}` — Delete player
 
 ### Tournaments
 - `POST /tournaments` — Create a (sub)tournament
 - `GET /tournaments` — List root tournaments
 - `GET /tournaments/{id}` — Get tournament with all subtournaments
 - `DELETE /tournaments/{id}` — Delete tournament
-- `POST /tournaments/{id}/register?playerId=...` — Register player in a tournament
+- `POST /tournaments/{id}/register?username=...` — Register player in a tournament
 
 ## 📂 Project Structure
 
