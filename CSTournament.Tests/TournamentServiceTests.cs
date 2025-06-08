@@ -33,7 +33,7 @@ public class TournamentServiceTests
         Assert.IsType<Results<Ok<Tournament>, BadRequest<string>, NotFound<string>>>(parent);
         (parent.Result as Ok<Tournament>)?.Value!.PlayerUsernames.Add(username);
         
-        var child = new Tournament("Stockholm-T", "Child", [], []);
+        var child = new Tournament("Stockholm-T", "Child", "Parent", [], []);
         (parent.Result as Ok<Tournament>)?.Value!.SubTournaments.Add(child);
 
         var result = _service.RegisterPlayer(child.Id, username);
@@ -47,7 +47,7 @@ public class TournamentServiceTests
         var parent = _service.CreateTournament(new TournamentCreateRequest("SE-T","Parent", null));
         Assert.IsType<Results<Ok<Tournament>, BadRequest<string>, NotFound<string>>>(parent);
         
-        var child = new Tournament("Stockholm", "Child", [], []);
+        var child = new Tournament("Stockholm", "Child", "SE-T", [], []);
         (parent.Result as Ok<Tournament>)?.Value!.SubTournaments.Add(child);
 
         var result = _service.RegisterPlayer(child.Id, username);

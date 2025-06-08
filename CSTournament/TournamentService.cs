@@ -7,6 +7,7 @@ public class TournamentService : ITournamentService
 {
     private readonly Dictionary<string, Tournament> _tournaments = new(StringComparer.OrdinalIgnoreCase);
     private readonly IPlayerService _playerService;
+    private const int MaxNestingDepth = 5;
 
     public TournamentService(IPlayerService playerService)
     {
@@ -15,16 +16,16 @@ public class TournamentService : ITournamentService
 
     public Results<Ok<Tournament>, BadRequest<string>, NotFound<string>> CreateTournament(TournamentCreateRequest req)
     {
-        var newTournament = new Tournament(req.Id, req.Name, [], []);
-
+        var newTournament = new Tournament(req.Id, req.Name, req.ParentId, [], []);
+        
         if (req.ParentId != null)
         {
             var parent = FindTournament(req.ParentId);
-            
+
             if (parent == null)
                 return TypedResults.NotFound($"Parent {req.ParentId} tournament not found.");
             
-            if (GetDepth(parent) >= 5)
+            if (GetDepth(parent) >= MaxNestingDepth)
                 return TypedResults.BadRequest("Max depth exceeded.");
             
             parent.SubTournaments.Add(newTournament);
@@ -89,7 +90,7 @@ public class TournamentService : ITournamentService
     {
         foreach (var t in tournaments)
         {
-            if (t.Id == id)
+            if (t.Id.Equals(id, StringComparison.OrdinalIgnoreCase))
                 return t;
             
             var found = FindTournamentRecursive(t.SubTournaments, id);
@@ -136,8 +137,13 @@ public class TournamentService : ITournamentService
         return null;
     }
 
-    private static int GetDepth(Tournament tournament)
+    private int GetDepth(Tournament tournament)
     {
-        return 1 + (tournament.SubTournaments.Count == 0 ? 0 : tournament.SubTournaments.Max(GetDepth));
+        if (tournament.ParentId == null)
+            return 1;
+        
+        var parent = FindTournament(tournament.ParentId)!;
+        
+        return 1 + GetDepth(parent);
     }
 }
